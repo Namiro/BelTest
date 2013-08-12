@@ -1,25 +1,25 @@
 
-beltestblog_accueil:
+belTestblog_accueil:
     path:      /{page}
     defaults:  { _controller: BelTestBlogBundle:Blog:index , page: 1 }
     requirements:
         page:  \d*
         
-beltestblog_voir:
+belTestblog_voir:
     path:      /article/{id}
     defaults:  { _controller: BelTestBlogBundle:Blog:voir }
      
-beltestblog_ajouter:
+belTestblog_ajouter:
     path:      /ajouter
     defaults:  { _controller: BelTestBlogBundle:Blog:ajouter }
 
-beltestblog_modifier:
+belTestblog_modifier:
     path:      /modifier/{id}
     defaults:  { _controller: BelTestBlogBundle:Blog:modifier }
     requirements:
         id:  \d+
  
-beltestblog_supprimer:
+belTestblog_supprimer:
     path:      /supprimer/{id}
     defaults:  { _controller: BelTestBlogBundle:Blog:supprimer }
     requirements:
