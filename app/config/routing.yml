@@ -1,0 +1,4 @@
+bel_test_blog:
+    resource: "@BelTestBlogBundle/Resources/config/routing.yml"
+    prefix:   /blog
+

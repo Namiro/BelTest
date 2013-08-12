@@ -1,0 +1,7 @@
+parameters:
+#    bel_test_blog.example.class: BelTest\BlogBundle\Example
+
+services:
+#    bel_test_blog.example:
+#        class: %bel_test_blog.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
