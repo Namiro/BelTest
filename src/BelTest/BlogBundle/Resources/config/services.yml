@@ -5,3 +5,6 @@ services:
 #    bel_test_blog.example:
 #        class: %bel_test_blog.example.class%
 #        arguments: [@service_id, "plain_value", %parameter%]
+    belTest_blog.antispam:
+        class: BelTest\BlogBundle\Antispam\BelTestAntispam
+        arguments: [@mailer, %locale%, 3]
