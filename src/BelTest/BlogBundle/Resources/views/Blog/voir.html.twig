@@ -5,7 +5,11 @@
 {% endblock %}
  
 {% block belTestblog_body %}
- 
+    {# On vérifie qu'une image soit bien associée à l'article #}
+    {% if article.image is not null %}
+        <img src="{{ article.image.url }}" alt="{{ article.image.alt }}" />
+    {% endif %}
+        
     <h2>{{ article.titre }}</h2>
     <i>Par {{ article.auteur }}, le {{ article.date|date('d/m/Y') }}</i>
 
@@ -13,6 +17,36 @@
         {{ article.contenu }}
     </div>
 
+    {% if article.categories.count > 0 %}
+        - Catégories :
+        {% for categorie in article.categories %}
+          {{ categorie.nom }}
+          {% if not loop.last %} - {% endif %}
+        {% endfor %}
+    {% endif %}    
+    
+    <div class="well">
+        <h2>Commentaires</h2>
+        <ul>
+            {% for commentaire in article.commentaires %}
+                <li>{{ commentaire.contenu }}</li>
+            {% else %}
+                <li>Pas de commentaire pour cette article.</li>
+            {% endfor %}
+        </ul>
+    </div>
+          
+    {% if liste_articleCompetence|length > 0 %}
+        <div>
+            Compétences utilisées dans cet article :
+            <ul>
+                {% for articleCompetence in liste_articleCompetence %}
+                    <li>{{ articleCompetence.competence.nom }} : {{ articleCompetence.niveau }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+          
     <p>
         <a href="{{ path('belTestblog_accueil') }}" class="btn">
             <i class="icon-chevron-left"></i>

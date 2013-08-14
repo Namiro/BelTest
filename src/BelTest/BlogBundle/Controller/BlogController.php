@@ -3,7 +3,10 @@
 namespace BelTest\BlogBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
+use Beltest\BlogBundle\Entity\Article;
+use Beltest\BlogBundle\Entity\Image;
+use Beltest\BlogBundle\Entity\Commentaire;
+use Beltest\BlogBundle\Entity\ArticleCompetence;
 
 class BlogController extends Controller
 {
@@ -17,65 +20,121 @@ class BlogController extends Controller
             // Cela va afficher la page d'erreur 404 (on pourra personnaliser cette page plus tard d'ailleurs)
             throw $this->createNotFoundException('Page inexistante (page = '.$page.')');
         }
+        
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()
+                   ->getManager();
 
-        // Ici, on récupérera la liste des articles, puis on la passera au template
-
-        // Les articles :
-        $articles = array(
-            array(
-                'titre'   => 'Mon weekend a Phi Phi Island !',
-                'id'      => 1,
-                'auteur'  => 'winzou',
-                'contenu' => 'Ce weekend était trop bien. Blabla…',
-                'date'    => new \Datetime()),
-            array(
-                'titre'   => 'Repetition du National Day de Singapour',
-                'id'      => 2,
-                'auteur' => 'winzou',
-                'contenu' => 'Bientôt prêt pour le jour J. Blabla…',
-                'date'    => new \Datetime()),
-            array(
-                'titre'   => 'Chiffre d\'affaire en hausse',
-                'id'      => 3, 
-                'auteur' => 'M@teo21',
-                'contenu' => '+500% sur 1 an, fabuleux. Blabla…',
-                'date'    => new \Datetime())
-          );
+        $liste_articles = $em->getRepository('BelTestBlogBundle:Article')
+                                 ->findAll();
+        
 
         return $this->render('BelTestBlogBundle:Blog:index.html.twig', array(
-          'articles' => $articles
+            'liste_articles' => $liste_articles
         ));
     }
 
 
     public function voirAction($id)
     {
-        $article = array(
-            'id'      => 1,
-            'titre'   => 'Mon weekend a Phi Phi Island !',
-            'auteur'  => 'winzou',
-            'contenu' => 'Ce weekend était trop bien. Blabla…',
-            'date'    => new \Datetime()
-        );
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()
+                   ->getManager();
 
+        // On récupère l'entité correspondant à l'id $id
+        $article = $em->getRepository('BelTestBlogBundle:Article')
+                      ->find($id);
+
+        // Ou null si aucun article n'a été trouvé avec l'id $id
+        if($article === null)
+        {
+            throw $this->createNotFoundException('Article[id='.$id.'] inexistant.');
+        }
+
+        // On récupère les articleCompetence pour l'article $article
+        $liste_articleCompetence = $em->getRepository('BelTestBlogBundle:ArticleCompetence')
+                                      ->findByArticle($article->getId());
+        
         // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
         return $this->render('BelTestBlogBundle:Blog:voir.html.twig', array(
-            'article' => $article
+            'article'        => $article,
+            'liste_articleCompetence' => $liste_articleCompetence
         ));
     }
 
     public function ajouterAction()
     {
-        // La gestion d'un formulaire est particulière, mais l'idée est la suivante :
 
-        if( $this->get('request')->getMethod() == 'POST' )
+        // Création de l'entité
+        $article = new Article();
+        $article->setTitre('Mon dernier weekend');
+        $article->setAuteur('Bibi');
+        $article->setContenu("C'était vraiment super et on s'est bien amusé.");
+        
+        // Création d'un premier commentaire
+        $commentaire1 = new Commentaire();
+        $commentaire1->setAuteur('winzou');
+        $commentaire1->setContenu('On veut les photos !');
+
+        // Création d'un deuxième commentaire, par exemple
+        $commentaire2 = new Commentaire();
+        $commentaire2->setAuteur('Choupy');
+        $commentaire2->setContenu('Les photos arrivent !');
+
+        // On lie les commentaires à l'article
+        $commentaire1->setArticle($article);
+        $commentaire2->setArticle($article);
+        
+        // Création de l'entité Image
+        $image = new Image();
+        $image->setUrl('http://uploads.siteduzero.com/icones/478001_479000/478657.png');
+        $image->setAlt('Logo Symfony2');
+        
+        // On lie l'image à l'article
+        $article->setImage($image);
+        
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()->getManager();
+
+        // Étape 1 : On « persiste » les entités
+        $em->persist($article);
+        // Pour cette relation pas de cascade, car elle est définie dans l'entité Commentaire et non Article
+        // On doit donc tout persister à la main ici
+        $em->persist($commentaire1);
+        $em->persist($commentaire2);
+
+        // Étape 2 : On « flush » tout ce qui a été persisté avant
+        $em->flush();
+        
+        
+        // Les compétences existent déjà, on les récupère depuis la bdd
+        $liste_competences = $em->getRepository('BelTestBlogBundle:Competence')
+                                ->findAll(); // Pour l'exemple, notre Article contient toutes les Competences
+
+        // Pour chaque compétence
+        foreach($liste_competences as $i => $competence)
         {
-            // Ici, on s'occupera de la création et de la gestion du formulaire
+            // On crée une nouvelle « relation entre 1 article et 1 compétence »
+            $articleCompetence[$i] = new ArticleCompetence;
 
-            $this->get('session')->getFlashBag()->add('notice', 'Article bien enregistré');
+            // On la lie à l'article, qui est ici toujours le même
+            $articleCompetence[$i]->setArticle($article);
+            // On la lie à la compétence, qui change ici dans la boucle foreach
+            $articleCompetence[$i]->setCompetence($competence);
 
-            // Puis on redirige vers la page de visualisation de cet article
-            return $this->redirect( $this->generateUrl('belTestblog_voir', array('id' => 5)) );
+            // Arbitrairement, on dit que chaque compétence est requise au niveau 'Expert'
+            $articleCompetence[$i]->setNiveau('Expert');
+
+            // Et bien sûr, on persiste cette entité de relation, propriétaire des deux autres relations
+            $em->persist($articleCompetence[$i]);
+        }
+
+        // On déclenche l'enregistrement
+        $em->flush();
+
+        if ($this->getRequest()->getMethod() == 'POST') {
+          $this->get('session')->getFlashBag()->add('info', 'Article bien enregistré');
+          return $this->redirect( $this->generateUrl('sdzblog_voir', array('id' => $article->getId())));
         }
 
         // Si on n'est pas en POST, alors on affiche le formulaire
@@ -84,34 +143,76 @@ class BlogController extends Controller
 
     public function modifierAction($id)
     {
-        // Ici, on récupérera l'article correspondant à $id
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()
+                   ->getManager();
 
-        // Ici, on s'occupera de la création et de la gestion du formulaire
+        // On récupère l'entité correspondant à l'id $id
+        $article = $em->getRepository('BelTestBlogBundle:Article')
+                      ->find($id);
 
-        $article = array(
-            'id'      => 1,
-            'titre'   => 'Mon weekend a Phi Phi Island !',
-            'auteur'  => 'winzou',
-            'contenu' => 'Ce weekend était trop bien. Blabla…',
-            'date'    => new \Datetime()
-        );
+        if ($article === null) {
+            throw $this->createNotFoundException('Article[id='.$id.'] inexistant.');
+        }
 
+        // On récupère toutes les catégories :
+        $liste_categories = $em->getRepository('BelTestBlogBundle:Categorie')
+                               ->findAll();
+
+        // On boucle sur les catégories pour les lier à l'article
+        foreach($liste_categories as $categorie)
+        {
+            $article->addCategorie($categorie);
+        }
+         
+        // Inutile de persister l'article, on l'a récupéré avec Doctrine
+
+        // Étape 2 : On déclenche l'enregistrement
+        $em->flush();
+        
         // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
         return $this->render('BelTestBlogBundle:Blog:modifier.html.twig', array(
             'article' => $article
         ));
     }
+    
+public function supprimerAction($id)
+  {
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()
+                   ->getManager();
 
-    public function supprimerAction($id)
-    {
-        // Ici, on récupérera l'article correspondant à $id
+        // On récupère l'entité correspondant à l'id $id
+        $article = $em->getRepository('BelTestBlogBundle:Article')
+                      ->find($id);
 
-        // Ici, on gérera la suppression de l'article en question
+        if ($article === null) {
+            throw $this->createNotFoundException('Article[id='.$id.'] inexistant.');
+        }
 
-        return $this->render('BelTestBlogBundle:Blog:supprimer.html.twig', array(
-            'id' => $id
-        ));
-    }
+        // On récupère toutes les catégories :
+        $liste_categories = $em->getRepository('BelTestBlogBundle:Categorie')
+                               ->findAll();
+
+        // On enlève toutes ces catégories de l'article
+        foreach($liste_categories as $categorie)
+        {
+            // On fait appel à la méthode removeCategorie() dont on a parlé plus haut
+            // Attention ici, $categorie est bien une instance de Categorie, et pas seulement un id
+            $article->removeCategorie($categorie);
+        }
+
+        // On n'a pas modifié les catégories : inutile de les persister
+
+        // On a modifié la relation Article - Categorie
+        // Il faudrait persister l'entité propriétaire pour persister la relation
+        // Or l'article a été récupéré depuis Doctrine, inutile de le persister
+
+        // On déclenche la modification
+        $em->flush();
+
+        return new Response('OK');
+  }
     
     public function menuAction($nombre)
     {
