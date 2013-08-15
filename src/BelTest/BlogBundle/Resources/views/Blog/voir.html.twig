@@ -1,9 +1,50 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Lecture de l'article {{ id }}</title>
-    </head>
-    <body>
-        <h1>Hello Article n°{{ id }} !</h1>
-    </body>
-</html>
+{% extends "BelTestBlogBundle::layout.html.twig" %}
+ 
+{% block title %}
+    Lecture d'un article - {{ parent() }}
+{% endblock %}
+ 
+{% block belTestblog_body %}
+
+    {# Ici, on inclut la vue #}
+    {% include "BelTestBlogBundle:Blog:article.html.twig" %}
+
+    
+    <div class="well">
+        <h2>Commentaires</h2>
+        <ul>
+            {% for commentaire in article.commentaires %}
+                <li>{{ commentaire.contenu }}</li>
+            {% else %}
+                <li>Pas de commentaire pour cette article.</li>
+            {% endfor %}
+        </ul>
+    </div>
+          
+    {% if liste_articleCompetence|length > 0 %}
+        <div>
+            Compétences utilisées dans cet article :
+            <ul>
+                {% for articleCompetence in liste_articleCompetence %}
+                    <li>{{ articleCompetence.competence.nom }} : {{ articleCompetence.niveau }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+          
+    <p>
+        <a href="{{ path('belTestblog_accueil') }}" class="btn">
+            <i class="icon-chevron-left"></i>
+            Retour à la liste
+        </a>
+        <a href="{{ path('belTestblog_modifier', {'id': article.id}) }}" class="btn">
+              <i class="icon-edit"></i>
+              Modifier l'article
+        </a>
+        <a href="{{ path('belTestblog_supprimer', {'id': article.id}) }}" class="btn">
+              <i class="icon-trash"></i>
+              Supprimer l'article
+        </a>
+    </p>
+ 
+{% endblock %}

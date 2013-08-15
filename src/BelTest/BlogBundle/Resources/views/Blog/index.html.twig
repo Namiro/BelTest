@@ -1,16 +1,35 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Bienvenue sur ma première page avec le Site du Zéro !</title>
-  </head>
-  <body>
-    <h1>Hello !</h1>
+{% extends "BelTestBlogBundle::layout.html.twig" %}
  
-    <p>
-      Le Hello World est un grand classique en programmation.
-      Il signifie énormément, car cela veut dire que vous avez
-      réussi à exécuter le programme pour accomplir une tâche simple :
-      afficher ce hello world !
-    </p>
-  </body>
-</html>
+{% block title %}
+    Accueil - {{ parent() }}
+{% endblock %}
+ 
+{% block belTestblog_body %}
+ 
+    <h2>Liste des articles</h2>
+ 
+    <ul>
+        {% for article in liste_articles %}
+
+            {# On inclut la vue à chaque itération dans la boucle #}
+            {% include "BelTestBlogBundle:Blog:article.html.twig" with {'accueil': true} %}
+            <hr />
+        {% else %}
+            Pas (encore !) d'articles
+        {% endfor %}
+    </ul>
+    
+    {% if nombrePage > 0 %}
+        <div class="pagination">
+            <ul>
+                {# On utilise la fonction range(a, b) qui crée un tableau de valeurs entre a et b #}
+                {% for p in range(1, nombrePage) %}
+                    <li{% if p == page %} class="active"{% endif %}>
+                        <a href="{{ path('belTestblog_accueil', {'page': p}) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+ 
+{% endblock %}
