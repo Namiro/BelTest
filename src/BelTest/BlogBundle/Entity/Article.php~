@@ -4,7 +4,10 @@ namespace BelTest\BlogBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 <<<<<<< HEAD
+<<<<<<< HEAD
 use Gedmo\Mapping\Annotation as Gedmo;
+=======
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 
@@ -14,7 +17,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="BelTest\BlogBundle\Entity\ArticleRepository")
 <<<<<<< HEAD
+<<<<<<< HEAD
  * @ORM\HasLifecycleCallbacks()
+=======
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
  */
@@ -95,12 +101,15 @@ class Article
 
     /**
 <<<<<<< HEAD
+<<<<<<< HEAD
      * @Gedmo\Slug(fields={"titre"})
      * @ORM\Column(length=128, unique=true)
      */
     private $slug;
     
     /**
+=======
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
      * Get id
@@ -317,6 +326,7 @@ class Article
         return $this->commentaires;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     /**
      * Set dateEdition
@@ -348,6 +358,8 @@ class Article
     {
       $this->setDateEdition(new \Datetime());
     }
+=======
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 }

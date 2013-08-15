@@ -21,8 +21,12 @@
         "incenteev/composer-parameter-handler": "~2.0",
         "doctrine/doctrine-fixtures-bundle": "dev-master",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "doctrine/data-fixtures": "@dev",
         "stof/doctrine-extensions-bundle": "dev-master"
+=======
+        "doctrine/data-fixtures": "@dev"
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
         "doctrine/data-fixtures": "@dev"
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a

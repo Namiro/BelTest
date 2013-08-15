@@ -4,7 +4,11 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "hash": "9591d6ef1d9b29d0d6451db9019da0c8",
+=======
+    "hash": "2565b16cd93b0812f8574e09f04fe6db",
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
     "hash": "2565b16cd93b0812f8574e09f04fe6db",
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
@@ -1435,8 +1439,12 @@
     "stability-flags": {
         "doctrine/doctrine-fixtures-bundle": 20,
 <<<<<<< HEAD
+<<<<<<< HEAD
         "doctrine/data-fixtures": 20,
         "stof/doctrine-extensions-bundle": 20
+=======
+        "doctrine/data-fixtures": 20
+>>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
 =======
         "doctrine/data-fixtures": 20
 >>>>>>> 2882d062640ad5fbbbb387e63e3157f3300c0c8a
