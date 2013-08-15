@@ -5,23 +5,24 @@
     Supprimer un article - {{ parent() }}
 {% endblock %}
  
-{% block body %}
 
+{% block belTestblog_body %}
+ 
     <h2>Supprimer un article</h2>
 
     <p>
-        Voulez vous vraiment supprimer l'article n° {{ id }} ?
+        Etes-vous certain de vouloir supprimer l'article "{{ article.titre }}" ?
     </p>
 
-    <p>
-        <a href="{{ path('belTestblog_voir', {'id': id}) }}" class="btn">
+    {# On met l'id de l'article dans la route de l'action du formulaire #}
+    <form action="{{ path('belTestblog_supprimer', {'id': article.id}) }}" method="post">
+        <a href="{{ path('belTestblog_voir', {'id': article.id}) }}" class="btn">
             <i class="icon-chevron-left"></i>
             Retour à l'article
         </a>
-        <a href="{{ path('belTestblog_voir', {'id': id}) }}" class="btn">
-            Supprimer définitivement
-        </a>
-    </p>
-
+        <input type="submit" value="Supprimer" class="btn btn-danger" />
+        {{ form_rest(form) }}
+    </form>
+ 
 {% endblock %}
-    
+

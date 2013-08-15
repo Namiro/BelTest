@@ -3,127 +3,158 @@
 namespace BelTest\BlogBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
+use Beltest\BlogBundle\Entity\Article;
+use BelTest\BlogBundle\Form\ArticleType;
+use BelTest\BlogBundle\Form\ArticleEditType;
 
 class BlogController extends Controller
 {
     public function indexAction($page)
-    {
-        // On ne sait pas combien de pages il y a
-        // Mais on sait qu'une page doit être supérieure ou égale à 1
-        if( $page < 1 )
-        {
-            // On déclenche une exception NotFoundHttpException
-            // Cela va afficher la page d'erreur 404 (on pourra personnaliser cette page plus tard d'ailleurs)
-            throw $this->createNotFoundException('Page inexistante (page = '.$page.')');
-        }
+    {        
+        $liste_articles = $this->getDoctrine()
+                         ->getManager()
+                         ->getRepository('BelTestBlogBundle:Article')
+                         ->getArticles(1, $page); // 3 articles par page : c'est totalement arbitraire !
 
-        // Ici, on récupérera la liste des articles, puis on la passera au template
-
-        // Les articles :
-        $articles = array(
-            array(
-                'titre'   => 'Mon weekend a Phi Phi Island !',
-                'id'      => 1,
-                'auteur'  => 'winzou',
-                'contenu' => 'Ce weekend était trop bien. Blabla…',
-                'date'    => new \Datetime()),
-            array(
-                'titre'   => 'Repetition du National Day de Singapour',
-                'id'      => 2,
-                'auteur' => 'winzou',
-                'contenu' => 'Bientôt prêt pour le jour J. Blabla…',
-                'date'    => new \Datetime()),
-            array(
-                'titre'   => 'Chiffre d\'affaire en hausse',
-                'id'      => 3, 
-                'auteur' => 'M@teo21',
-                'contenu' => '+500% sur 1 an, fabuleux. Blabla…',
-                'date'    => new \Datetime())
-          );
-
+        // On ajoute ici les variables page et nb_page à la vue
         return $this->render('BelTestBlogBundle:Blog:index.html.twig', array(
-          'articles' => $articles
+            'liste_articles'   => $liste_articles,
+            'page'       => $page,
+            'nombrePage' => ceil(count($liste_articles)/1)
         ));
     }
 
 
-    public function voirAction($id)
+    public function voirAction(Article $article)
     {
-        $article = array(
-            'id'      => 1,
-            'titre'   => 'Mon weekend a Phi Phi Island !',
-            'auteur'  => 'winzou',
-            'contenu' => 'Ce weekend était trop bien. Blabla…',
-            'date'    => new \Datetime()
-        );
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()
+                   ->getManager();
 
+        // On récupère les articleCompetence pour l'article $article
+        $liste_articleCompetence = $em->getRepository('BelTestBlogBundle:ArticleCompetence')
+                                      ->findByArticle($article->getId());
+        
         // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
         return $this->render('BelTestBlogBundle:Blog:voir.html.twig', array(
-            'article' => $article
+            'article'        => $article,
+            'liste_articleCompetence' => $liste_articleCompetence
         ));
     }
 
     public function ajouterAction()
     {
-        // La gestion d'un formulaire est particulière, mais l'idée est la suivante :
+        $article = new Article;
 
-        if( $this->get('request')->getMethod() == 'POST' )
+        $form = $this->createForm(new ArticleType, $article);
+
+        // On récupère la requête
+        $request = $this->get('request');
+
+        // On vérifie qu'elle est de type POST
+        if ($request->getMethod() == 'POST') 
         {
-            // Ici, on s'occupera de la création et de la gestion du formulaire
+            // On fait le lien Requête <-> Formulaire
+            // À partir de maintenant, la variable $article contient les valeurs entrées dans le formulaire par le visiteur
+            $form->bind($request);
 
-            $this->get('session')->getFlashBag()->add('notice', 'Article bien enregistré');
+            // On vérifie que les valeurs entrées sont correctes
+            // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+            if ($form->isValid()) 
+            {
+                // On l'enregistre notre objet $article dans la base de données
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($article);
+                $em->flush();
 
-            // Puis on redirige vers la page de visualisation de cet article
-            return $this->redirect( $this->generateUrl('belTestblog_voir', array('id' => 5)) );
+                // On redirige vers la page de visualisation de l'article nouvellement créé
+                return $this->redirect($this->generateUrl('belTestblog_voir', array('id' => $article->getId())));
+            }
         }
+        // À ce stade :
+        // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+        // - Soit la requête est de type POST, mais le formulaire n'est pas valide, donc on l'affiche de nouveau
 
-        // Si on n'est pas en POST, alors on affiche le formulaire
-        return $this->render('BelTestBlogBundle:Blog:ajouter.html.twig');
-    }
-
-    public function modifierAction($id)
-    {
-        // Ici, on récupérera l'article correspondant à $id
-
-        // Ici, on s'occupera de la création et de la gestion du formulaire
-
-        $article = array(
-            'id'      => 1,
-            'titre'   => 'Mon weekend a Phi Phi Island !',
-            'auteur'  => 'winzou',
-            'contenu' => 'Ce weekend était trop bien. Blabla…',
-            'date'    => new \Datetime()
-        );
-
-        // Puis modifiez la ligne du render comme ceci, pour prendre en compte l'article :
-        return $this->render('BelTestBlogBundle:Blog:modifier.html.twig', array(
-            'article' => $article
+        return $this->render('BelTestBlogBundle:Blog:ajouter.html.twig', array(
+          'form' => $form->createView(),
         ));
     }
-
-    public function supprimerAction($id)
+    
+    public function supprimerAction(Article $article)
     {
-        // Ici, on récupérera l'article correspondant à $id
+        // On crée un formulaire vide, qui ne contiendra que le champ CSRF
+        // Cela permet de protéger la suppression d'article contre cette faille
+        $form = $this->createFormBuilder()->getForm();
 
-        // Ici, on gérera la suppression de l'article en question
+        $request = $this->getRequest();
+        
+        if ($request->getMethod() == 'POST') 
+        {
+            $form->bind($request);
 
+            if ($form->isValid()) 
+            {
+                // On supprime l'article
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($article);
+                $em->flush();
+
+                // On définit un message flash
+                $this->get('session')->getFlashBag()->add('info', 'Article bien supprimé');
+
+                // Puis on redirige vers l'accueil
+                return $this->redirect($this->generateUrl('belTestblog_accueil'));
+            }
+        }
+
+        // Si la requête est en GET, on affiche une page de confirmation avant de supprimer
         return $this->render('BelTestBlogBundle:Blog:supprimer.html.twig', array(
-            'id' => $id
+            'article' => $article,
+            'form'    => $form->createView()
         ));
     }
     
     public function menuAction($nombre)
     {
-        // On fixe en dur une liste ici, bien entendu par la suite on la récupérera depuis la BDD !
-        $liste = array(
-          array('id' => 2, 'titre' => 'Mon dernier weekend !'),
-          array('id' => 5, 'titre' => 'Sortie de Symfony2.1'),
-          array('id' => 9, 'titre' => 'Petit test')
-        );
+        $liste = $this->getDoctrine()
+                      ->getManager()
+                      ->getRepository('BelTestBlogBundle:Article')
+                      ->findBy(
+                        array(),          // Pas de critère
+                        array('date' => 'desc'), // On trie par date décroissante
+                        $nombre,         // On sélectionne $nombre articles
+                        0                // À partir du premier
+                      );
 
         return $this->render('BelTestBlogBundle:Blog:menu.html.twig', array(
           'liste_articles' => $liste // C'est ici tout l'intérêt : le contrôleur passe les variables nécessaires au template !
         ));
     }
-}
+    
+    public function modifierAction(Article $article)
+    {
+        $form = $this->createForm(new ArticleEditType, $article);
+
+        $request = $this->get('request');
+
+        if ($request->getMethod() == 'POST') 
+        {
+            $form->bind($request);
+            
+            if ($form->isValid()) 
+            {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($article);
+                $em->flush();
+
+                return $this->redirect($this->generateUrl('belTestblog_voir', array('id' => $article->getId())));
+            }
+        }
+
+        return $this->render('BelTestBlogBundle:Blog:modifier.html.twig', array(
+            'form' => $form->createView(),
+            'article' => $article
+
+        ));
+    }
+        }

@@ -1,0 +1,30 @@
+<?php
+
+namespace BelTest\BlogBundle\Entity;
+ 
+use Doctrine\ORM\Mapping as ORM;
+ 
+/**
+ * @ORM\Entity
+ */
+class ArticleCompetence
+{
+  /**
+   * @ORM\Id
+   * @ORM\ManyToOne(targetEntity="BelTest\BlogBundle\Entity\Article")
+   */
+  private $article;
+ 
+  /**
+   * @ORM\Id
+   * @ORM\ManyToOne(targetEntity="BelTest\BlogBundle\Entity\Competence")
+   */
+  private $competence;
+ 
+  /**
+   * @ORM\Column()
+   */
+  private $niveau; // Ici j'ai un attribut de relation « niveau »
+ 
+  // … vous pouvez ajouter d'autres attributs bien entendu
+}
